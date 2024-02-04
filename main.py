@@ -1,9 +1,13 @@
+import json
 import os
 import sys
 
 import requests
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel
+
+import return_params
 
 SCREEN_SIZE = [600, 450]
 
@@ -15,8 +19,7 @@ class Example(QWidget):
         self.initUI()
 
     def getImage(self):
-        params = {'ll': ','.join([str(elem) for elem in [37.530887, 55.703118]]),
-                  'spn': ','.join([str(elem) for elem in [0.002, 0.002]]), 'l': 'map'}
+        params = return_params.ret_params()
         map_request = "http://static-maps.yandex.ru/1.x/"
         response = requests.get(map_request, params=params)
 
@@ -42,9 +45,40 @@ class Example(QWidget):
         self.image.resize(600, 450)
         self.image.setPixmap(self.pixmap)
 
+    def image_redistribution(self):
+        self.pixmap = QPixmap(self.map_file)
+        self.image.setPixmap(self.pixmap)
+
     def closeEvent(self, event):
         """При закрытии формы подчищаем за собой"""
         os.remove(self.map_file)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_PageDown:
+            print('down')
+            data = return_params.ret_params()
+            print(float(data['spn'].split(',')[0]))
+            if float(data['spn'].split(',')[0]) > 0.04:
+                if float(data['spn'].split(',')[0]) < 0.5:
+                    data['spn'] = f"{float(data['spn'].split(',')[0]) - 0.04},{float(data['spn'].split(',')[1]) - 0.04}"
+                else:
+                    data['spn'] = f"{float(data['spn'].split(',')[0]) - 0.5},{float(data['spn'].split(',')[1]) - 0.5}"
+            with open('params.json', 'w') as f:
+                json.dump(data, f)
+        elif event.key() == Qt.Key_PageUp:
+            print('up')
+            data = return_params.ret_params()
+            print(float(data['spn'].split(',')[0]))
+            if float(data['spn'].split(',')[0]) < 9.5:
+                if float(data['spn'].split(',')[0]) < 0.5:
+                    data['spn'] = f"{float(data['spn'].split(',')[0]) + 0.04},{float(data['spn'].split(',')[1]) + 0.04}"
+
+                else:
+                    data['spn'] = f"{float(data['spn'].split(',')[0]) + 0.5},{float(data['spn'].split(',')[1]) + 0.5}"
+            with open('params.json', 'w') as f:
+                json.dump(data, f)
+        self.getImage()
+        self.image_redistribution()
 
 
 if __name__ == '__main__':
