@@ -55,7 +55,6 @@ class Example(QWidget):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_PageDown:
-            print('down')
             data = return_params.ret_params()
             print(float(data['spn'].split(',')[0]))
             if float(data['spn'].split(',')[0]) > 0.04:
@@ -66,7 +65,6 @@ class Example(QWidget):
             with open('params.json', 'w') as f:
                 json.dump(data, f)
         elif event.key() == Qt.Key_PageUp:
-            print('up')
             data = return_params.ret_params()
             print(float(data['spn'].split(',')[0]))
             if float(data['spn'].split(',')[0]) < 9.5:
